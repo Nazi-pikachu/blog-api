@@ -3,6 +3,9 @@ const app = express();
 const port = 3000;
 const dotenv = require("dotenv").config();
 const mongoose = require("mongoose");
+const authRoute = require("./routes/auth");
+app.use(express.json());
+
 mongoose
   .connect(process.env.MONGO_URL)
   .then(console.log("connected"))
@@ -10,9 +13,10 @@ mongoose
     console.log(err);
   });
 
+app.use("/api/auth", authRoute);
+
 app.get("/", (req, res) => {
-  console.log(req);
-  res.send("Work in progress");
+  res.send("Work in Progess");
 });
 
 app.listen(port, () => {
