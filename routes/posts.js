@@ -14,24 +14,64 @@ router.post("/", async (req, res) => {
 });
 
 // UPDATE POST
-router.put("/:id/:postId", async (req, res) => {
-  if (req.body.userId === req.params.id) {
-    // const user = await User.findById(req.params.id);
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    res.status(200).json(post);
+router.put("/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (post.username === req.body.username) {
+    try {
+      const updatedPost = await Post.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      );
+      res.status(200).json(updatedPost);
+    } catch (err) {
+      res.status(500).json(err);
+    }
   } else {
-    res.status(500).json("You donot have the permession to update this post!");
+    res.status(500).json("You can update your posts only");
   }
 });
 
 // DELETE POST
-router.put("/:id", async (req, res) => {});
+router.delete("/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (post.username === req.body.username) {
+    await Post.findByIdAndDelete(req.params.id);
+    res.status(200).json("Post deleted successfully...");
+  } else {
+    res.status(500).json("you can only delete your posts");
+  }
+});
 
 // GET
-router.get("/:id", async (req, res) => {});
+router.get("/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
+// GET ALL POSTS
+router.get("/", async (req, res) => {
+  const userName = req.query.user;
+  const catName = req.query.cat;
+  // console.log(userName, catName);
+  try {
+    let posts;
+    if (userName) {
+      posts = await Post.find({ username: userName });
+    } else if (catName) {
+      posts = await Post.find({ categories: { $in: [catName] } });
+    } else {
+      posts = await Post.find();
+    }
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 module.exports = router;
